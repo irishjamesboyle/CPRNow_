@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "547091274094",
+    "firebase_url": "https://cprnow-8b5f2.firebaseio.com",
+    "project_id": "cprnow-8b5f2",
+    "storage_bucket": "cprnow-8b5f2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:547091274094:android:251dfe617c9761ad",
+        "android_client_info": {
+          "package_name": "com.jamesboyle.cprnow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "547091274094-qd053jimthn5sk9ibqg33l9dlb5cepr9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jamesboyle.cprnow",
+            "certificate_hash": "18b6b680561979029570f411f622eed7099ce53b"
+          }
+        },
+        {
+          "client_id": "547091274094-e2iv06t9pv2892c4rurrkdmtn9e6s94u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCU4xvzexPa6k8jpNouOV8KsvcfV_S2APA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "547091274094-e2iv06t9pv2892c4rurrkdmtn9e6s94u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
