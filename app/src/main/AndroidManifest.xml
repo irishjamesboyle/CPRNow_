@@ -26,7 +26,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ResponderLoginActivity" />
-        <activity android:name=".MapActivity" />
         <activity android:name=".PatientLoginActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -42,7 +41,8 @@
 
         <activity
             android:name=".ResponderMapActivity"
-            android:label="@string/title_activity_responder_map"></activity>
+            android:label="@string/title_activity_responder_map" />
+        <activity android:name=".PatientMapActivity"></activity>
     </application>
 
 </manifest>

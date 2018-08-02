@@ -36,7 +36,7 @@ public class PatientLoginActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 if (user!= null) {
-                    Intent intent = new Intent(PatientLoginActivity.this, MapActivity.class);
+                    Intent intent = new Intent(PatientLoginActivity.this, PatientMapActivity.class);
                     startActivity(intent);
                     finish();
                     return;
