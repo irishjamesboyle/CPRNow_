@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -32,6 +34,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -126,8 +129,56 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
                 mMap.addMarker(new MarkerOptions().position(pickupLocation).title("Patient here"));
 
                 mRequest.setText("Getting CPR help...");
+
+                getClosestResponder();
             }
         });
+    }
+    private int radius = 1;
+    private boolean responderFound = false;
+    private String responderFoundID;
+    private void getClosestResponder(){
+        DatabaseReference responderLocation = FirebaseDatabase.getInstance().getReference().child("respondersAvailable");
+
+        GeoFire geoFire = new GeoFire(responderLocation);
+
+        GeoQuery getQuery = geoFire.queryAtLocation(new GeoLocation(pickupLocation.latitude, pickupLocation.longitude), radius);
+        getQuery.removeAllListeners();
+
+        getQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                if (!responderFound) {
+                    responderFound = true;
+                    responderFoundID = key;
+                }
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                if (!responderFound){
+                    radius++;
+                    getClosestResponder();
+                }
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
+
+
     }
 
     @SuppressLint("MissingPermission")
