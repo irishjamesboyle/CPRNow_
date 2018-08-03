@@ -29,11 +29,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ResponderMapActivity extends FragmentActivity implements OnMapReadyCallback,
@@ -48,6 +54,7 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback locationCallback;
     private Button mLogout;
+    private String patientID = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +117,63 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
                 return;
             }
         });
+
+        getAssignedPatient();
+    }
+
+    private void getAssignedPatient(){
+        String responderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference assignedPatientRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Responders").child(responderId);
+        assignedPatientRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
+                    if (map.get("patientRideId") != null){
+                        patientID = map.get("patientRideId").toString();
+                        if (map.get("patiestRideId") != null){
+                            patientID = map.get("patientRideId").toString();
+                            getAssignedPatientPickupLocation();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void getAssignedPatientPickupLocation(){
+        DatabaseReference assignedPatientPickupLocationRef = FirebaseDatabase.getInstance().getReference().child("patientRequest").child("Responders").child(patientID).child("l");
+        assignedPatientPickupLocationRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    List<Object> map = (List<Object>) dataSnapshot.getValue();
+                    double locationLat = 0;
+                    double locationLng = 0;
+                    if (map.get(0) != null){
+                        locationLat = Double.parseDouble(map.get(0).toString());
+                    }
+                    if (map.get(0) != null){
+                        locationLng = Double.parseDouble(map.get(0).toString());
+                    }
+                    LatLng responderLatLng = new LatLng(locationLat, locationLng);
+                    mMap.addMarker(new MarkerOptions().position(responderLatLng).title("pickup location"));
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     @SuppressLint("MissingPermission")
@@ -154,12 +218,30 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
-
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("respondersAvailable");
+        DatabaseReference refAvailable = FirebaseDatabase.getInstance().getReference("respondersAvailable");
+        DatabaseReference refWorking = FirebaseDatabase.getInstance().getReference("respondersWorking");
+        GeoFire geoFireAvailable = new GeoFire(refAvailable);
+        GeoFire geoFireWorking = new GeoFire(refWorking);
+        switch (patientID){
+            case "":
+                geoFireWorking.removeLocation(userId);
+                geoFireAvailable.setLocation(userId, new GeoLocation(location.getLatitude(), (location.getLongitude())));
 
-        GeoFire geoFire = new GeoFire(ref);
-        geoFire.setLocation(userId, new GeoLocation(location.getLatitude(), (location.getLongitude())));
+                break;
+
+            default:
+                geoFireAvailable.removeLocation(userId);
+                geoFireWorking.setLocation(userId, new GeoLocation(location.getLatitude(), (location.getLongitude())));
+
+                break;
+        }
+
+
+
+
+
+
     }
 
     @Override

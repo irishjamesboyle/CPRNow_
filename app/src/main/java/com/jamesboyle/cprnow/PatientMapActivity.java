@@ -31,13 +31,18 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class PatientMapActivity extends FragmentActivity implements OnMapReadyCallback,
@@ -151,6 +156,15 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
                 if (!responderFound) {
                     responderFound = true;
                     responderFoundID = key;
+
+                    DatabaseReference responderRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Responders").child("responderFoundID");
+                    String patientID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    HashMap map = new HashMap();
+                    map.put("patientRideId", patientID);
+                    responderRef.updateChildren(map);
+
+                    getResponderLocation();
+                    mRequest.setText("Looking for Responder Location...");
                 }
             }
 
@@ -179,6 +193,37 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
         });
 
 
+    }
+    private Marker mResponderMarker;
+    private void getResponderLocation(){
+        DatabaseReference responderLocationRef = FirebaseDatabase.getInstance().getReference().child("respondersWorking").child(responderFoundID).child("l");
+        responderLocationRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    List<Object> map = (List<Object>) dataSnapshot.getValue();
+                    double locationLat = 0;
+                    double locationLng = 0;
+                    mRequest.setText("Responder Found");
+                    if (map.get(0) != null){
+                        locationLat = Double.parseDouble(map.get(0).toString());
+                    }
+                    if (map.get(0) != null){
+                        locationLng = Double.parseDouble(map.get(0).toString());
+                    }
+                    LatLng responderLatLng = new LatLng(locationLat, locationLng);
+                    if(mResponderMarker != null){
+                        mResponderMarker.remove();
+                    }
+                mResponderMarker = mMap.addMarker(new MarkerOptions().position(responderLatLng).title("Your responder"));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @SuppressLint("MissingPermission")
