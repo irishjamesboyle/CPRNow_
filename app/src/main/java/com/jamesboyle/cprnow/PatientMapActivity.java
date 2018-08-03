@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PatientMapActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener  {
+        com.google.android.gms.location.LocationListener {
 
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
@@ -79,7 +79,7 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
 
-        locationCallback = new LocationCallback(){
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
@@ -87,7 +87,7 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
                 if (locationResult != null) {
                     mLastLocation = locationResult.getLastLocation();
 
-                    for (Location location: locationResult.getLocations()) {
+                    for (Location location : locationResult.getLocations()) {
                         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -139,10 +139,12 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
             }
         });
     }
+
     private int radius = 1;
     private boolean responderFound = false;
     private String responderFoundID;
-    private void getClosestResponder(){
+
+    private void getClosestResponder() {
         DatabaseReference responderLocation = FirebaseDatabase.getInstance().getReference().child("respondersAvailable");
 
         GeoFire geoFire = new GeoFire(responderLocation);
@@ -180,7 +182,7 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
 
             @Override
             public void onGeoQueryReady() {
-                if (!responderFound){
+                if (!responderFound) {
                     radius++;
                     getClosestResponder();
                 }
@@ -194,8 +196,10 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
 
 
     }
+
     private Marker mResponderMarker;
-    private void getResponderLocation(){
+
+    private void getResponderLocation() {
         DatabaseReference responderLocationRef = FirebaseDatabase.getInstance().getReference().child("respondersWorking").child(responderFoundID).child("l");
         responderLocationRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -205,17 +209,34 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
                     double locationLat = 0;
                     double locationLng = 0;
                     mRequest.setText("Responder Found");
-                    if (map.get(0) != null){
+                    if (map.get(0) != null) {
                         locationLat = Double.parseDouble(map.get(0).toString());
                     }
-                    if (map.get(0) != null){
+                    if (map.get(0) != null) {
                         locationLng = Double.parseDouble(map.get(0).toString());
                     }
                     LatLng responderLatLng = new LatLng(locationLat, locationLng);
-                    if(mResponderMarker != null){
+                    if (mResponderMarker != null) {
                         mResponderMarker.remove();
                     }
-                mResponderMarker = mMap.addMarker(new MarkerOptions().position(responderLatLng).title("Your responder"));
+                    Location loc1 = new Location("");
+                    loc1.setLatitude(pickupLocation.latitude);
+                    loc1.setLongitude(pickupLocation.longitude);
+
+                    Location loc2 = new Location("");
+                    loc2.setLatitude(pickupLocation.latitude);
+                    loc2.setLongitude(pickupLocation.longitude);
+
+                    float distance = loc1.distanceTo(loc2);
+
+                    if (distance <25){
+                        mRequest.setText("Responder is here. Please check door is open!");
+                    } else {
+                        mRequest.setText("Responder Found: " + String.valueOf(distance));
+                    }
+
+
+                    mResponderMarker = mMap.addMarker(new MarkerOptions().position(responderLatLng).title("Your responder"));
                 }
             }
 
@@ -321,7 +342,6 @@ public class PatientMapActivity extends FragmentActivity implements OnMapReadyCa
     protected void onStop() {
         super.onStop();
     }
-
 
 
 }

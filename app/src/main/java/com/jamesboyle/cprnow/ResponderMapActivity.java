@@ -39,12 +39,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ResponderMapActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener  {
+        com.google.android.gms.location.LocationListener {
 
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
@@ -76,7 +75,7 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
             mapFragment.getMapAsync(this);
         }
 
-        locationCallback = new LocationCallback(){
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
@@ -84,7 +83,7 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
                 if (locationResult != null) {
                     mLastLocation = locationResult.getLastLocation();
 
-                    for (Location location: locationResult.getLocations()) {
+                    for (Location location : locationResult.getLocations()) {
                         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -121,21 +120,15 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
         getAssignedPatient();
     }
 
-    private void getAssignedPatient(){
+    private void getAssignedPatient() {
         String responderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedPatientRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Responders").child(responderId);
+        DatabaseReference assignedPatientRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Responders").child(responderId).child("patientRideId");
         assignedPatientRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
-                    if (map.get("patientRideId") != null){
-                        patientID = map.get("patientRideId").toString();
-                        if (map.get("patiestRideId") != null){
-                            patientID = map.get("patientRideId").toString();
-                            getAssignedPatientPickupLocation();
-                        }
-                    }
+                if (dataSnapshot.exists()) {
+                    patientID = dataSnapshot.getValue().toString();
+                    getAssignedPatientPickupLocation();
                 }
             }
 
@@ -147,19 +140,19 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
 
     }
 
-    private void getAssignedPatientPickupLocation(){
+    private void getAssignedPatientPickupLocation() {
         DatabaseReference assignedPatientPickupLocationRef = FirebaseDatabase.getInstance().getReference().child("patientRequest").child("Responders").child(patientID).child("l");
         assignedPatientPickupLocationRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLng = 0;
-                    if (map.get(0) != null){
+                    if (map.get(0) != null) {
                         locationLat = Double.parseDouble(map.get(0).toString());
                     }
-                    if (map.get(0) != null){
+                    if (map.get(0) != null) {
                         locationLng = Double.parseDouble(map.get(0).toString());
                     }
                     LatLng responderLatLng = new LatLng(locationLat, locationLng);
@@ -223,7 +216,7 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
         DatabaseReference refWorking = FirebaseDatabase.getInstance().getReference("respondersWorking");
         GeoFire geoFireAvailable = new GeoFire(refAvailable);
         GeoFire geoFireWorking = new GeoFire(refWorking);
-        switch (patientID){
+        switch (patientID) {
             case "":
                 geoFireWorking.removeLocation(userId);
                 geoFireAvailable.setLocation(userId, new GeoLocation(location.getLatitude(), (location.getLongitude())));
@@ -236,10 +229,6 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
 
                 break;
         }
-
-
-
-
 
 
     }
@@ -303,9 +292,8 @@ public class ResponderMapActivity extends FragmentActivity implements OnMapReady
         GeoFire geoFire = new GeoFire(ref);
         geoFire.removeLocation(userId);
 
-        }
-
-
-
     }
+
+
+}
 
